@@ -23,6 +23,7 @@ void confetti();
 void sinelon();
 void bpm();
 void juggle();
+void halfc();
 
 
 
@@ -50,10 +51,12 @@ void setup() {
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
-SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm };
+SimplePatternList gPatterns = { halfc, sinelon, rainbow, rainbowWithGlitter, confetti, juggle, bpm };
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+
+uint8_t mypos = 0; // global led position
 
 void loop()
 {
@@ -67,7 +70,7 @@ void loop()
 
   // do some periodic updates
   EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
-  EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+  // EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
 }
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
@@ -110,8 +113,19 @@ void sinelon()
 {
   // a colored dot sweeping back and forth, with fading trails
   fadeToBlackBy( leds, NUM_LEDS, 20);
-  int pos = beatsin16( 13, 0, NUM_LEDS-1 );
+  int pos = beatsin16( 2, 0, NUM_LEDS-1 );
   leds[pos] += CHSV( gHue, 255, 192);
+}
+
+void halfc()
+{
+  // a colored dot sweeping back and forth, with fading trails
+  fadeToBlackBy( leds, NUM_LEDS, 20);
+  mypos++;
+  if (mypos>60){
+    mypos=0;
+  }
+  leds[mypos] = CRGB::Red;
 }
 
 void bpm()
