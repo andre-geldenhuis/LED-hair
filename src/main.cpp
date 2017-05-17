@@ -11,7 +11,8 @@ FASTLED_USING_NAMESPACE
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
-#define BRIGHTNESS          25
+//#define BRIGHTNESS          30
+#define BRIGHTNESS          35
 #define FRAMES_PER_SECOND  120
 
 //Forward Declare Functions
@@ -24,7 +25,28 @@ void sinelon();
 void bpm();
 void juggle();
 
-
+// #Custom rainbow
+void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
+                  uint8_t initialhue,
+                  uint8_t deltahue,
+                bool dir=0 )
+{
+    CHSV hsv;
+    hsv.hue = initialhue;
+    hsv.val = 255;
+    hsv.sat = 240;
+    if(dir==1){
+      for( int i = 0; i < numToFill; i++) {
+          pFirstLED[i] = hsv;
+          hsv.hue += deltahue;
+      }
+    }else{
+      for( int i = numToFill-1; i >= 0; i--) {
+          pFirstLED[i] = hsv;
+          hsv.hue += deltahue;
+      }
+    }
+}
 
 void setup() {
   delay(3000); // 3 second delay for recovery
@@ -50,7 +72,8 @@ void setup() {
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
-SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm };
+//SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
+SimplePatternList gPatterns = { rainbow, confetti, juggle, bpm };
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
@@ -66,8 +89,8 @@ void loop()
   FastLED.delay(1000/FRAMES_PER_SECOND);
 
   // do some periodic updates
-  EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
-  EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+3; } // slowly cycle the "base color" through the rainbow
+  EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
 }
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
@@ -81,7 +104,7 @@ void nextPattern()
 void rainbow()
 {
   // FastLED's built-in rainbow generator
-  fill_rainbow( leds, NUM_LEDS, gHue, 7);
+  my_fill_rainbow( leds, NUM_LEDS, gHue, 7, 0);
 }
 
 void rainbowWithGlitter()
