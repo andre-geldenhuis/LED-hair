@@ -16,6 +16,8 @@
 #define FASTLED_ALLOW_INTERRUPTS 0
 // LED Setup - must come before the painlessMesh so CRGB can be used as a return type
 #include <FastLED.h>
+FASTLED_USING_NAMESPACE
+
 // How many leds in your strip?
 #define NUM_LEDS 144
 
@@ -76,11 +78,10 @@ CRGB Wheel(byte WheelPos);
 painlessMesh  mesh;
 //Task taskSendMessage( TASK_SECOND * 1 , TASK_FOREVER, &sendMessage );
 
-CRGB.setBrightness(15);
 
 void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
-
+  FastLED.setBrightness(15);
   Serial.begin(115200);
 
 //mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
