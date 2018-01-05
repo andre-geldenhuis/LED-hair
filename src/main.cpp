@@ -19,11 +19,11 @@
 FASTLED_USING_NAMESPACE
 
 // How many leds in your strip?
-#define NUM_LEDS 144
+#define NUM_LEDS 288
 
 // For led chips like Neopixels, which have a data line, ground, and power, you just
 // need to define DATA_PIN.  Note that the GPIO and Data pins are laballed separately on ESP8266 boards
-#define DATA_PIN D3
+#define DATA_PIN 13
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
