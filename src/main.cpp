@@ -6,13 +6,13 @@ FASTLED_USING_NAMESPACE
 #warning "Requires FastLED 3.1 or later; check github for latest code."
 #endif
 
-#define NUM_STRIPS 8
-#define NUM_LEDS_PER_STRIP 60
+#define NUM_STRIPS 1
+#define NUM_LEDS_PER_STRIP 600
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
 //#define BRIGHTNESS          30
-#define BRIGHTNESS          30
+#define BRIGHTNESS          20
 #define FRAMES_PER_SECOND  120
 
 //Forward Declare Functions
@@ -52,30 +52,7 @@ void setup() {
   delay(3000); // 3 second delay for recovery
 
   // tell FastLED there's 60 NEOPIXEL leds on pin 3, starting at index 0 in the led array
-  FastLED.addLeds<NEOPIXEL, 3>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 11, starting at index 60 in the led array
-  FastLED.addLeds<NEOPIXEL, 4>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 5, starting at index 120 in the led array
-  FastLED.addLeds<NEOPIXEL, 5>(leds, 2 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 6, starting at index 180 in the led array
-  FastLED.addLeds<NEOPIXEL, 6>(leds, 3 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 6, starting at index 180 in the led array
-  FastLED.addLeds<NEOPIXEL, 23>(leds, 4 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 6, starting at index 180 in the led array
-  FastLED.addLeds<NEOPIXEL, 22>(leds, 5 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 6, starting at index 180 in the led array
-  FastLED.addLeds<NEOPIXEL, 21>(leds, 6 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 6, starting at index 180 in the led array
-  FastLED.addLeds<NEOPIXEL, 20>(leds, 7 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-// FastLED.addLeds<LED_TYPE,6,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<NEOPIXEL, 13>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
@@ -85,7 +62,7 @@ void setup() {
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
-SimplePatternList gPatterns = { rainbow, confetti, juggle, bpm };
+SimplePatternList gPatterns = { rainbow, confetti};
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
