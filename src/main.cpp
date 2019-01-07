@@ -2,16 +2,20 @@
 
 FASTLED_USING_NAMESPACE
 
-#if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
-#warning "Requires FastLED 3.1 or later; check github for latest code."
-#endif
 
 #define NUM_STRIPS 6
 #define NUM_LEDS_PER_STRIP 37
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
-CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
-//#define BRIGHTNESS          30
+CRGBArray<NUM_LEDS> leds;
+
+CRGBSet leds_1(leds, 0,                                                                    NUM_LEDS_PER_STRIP);
+CRGBSet leds_2(leds, NUM_LEDS_PER_STRIP,                                                   NUM_LEDS_PER_STRIP);
+CRGBSet leds_3(leds, NUM_LEDS_PER_STRIP*2,                                                 NUM_LEDS_PER_STRIP);
+CRGBSet leds_4(leds, NUM_LEDS_PER_STRIP*3,                                                 NUM_LEDS_PER_STRIP);
+CRGBSet leds_5(leds, NUM_LEDS_PER_STRIP*4,                                                 NUM_LEDS_PER_STRIP);
+CRGBSet leds_6(leds, NUM_LEDS_PER_STRIP*5,                                                 NUM_LEDS_PER_STRIP);
+
 #define BRIGHTNESS          15
 #define FRAMES_PER_SECOND  120
 
@@ -20,12 +24,17 @@ void nextPattern();
 void rainbow();
 void rainbowWithGlitter();
 void addGlitter( fract8 chanceOfGlitter);
+void myconfetti(struct CRGB * pFirstLED);
 void confetti();
-void sinelon();
-void bpm();
-void juggle();
+void rainbowrain();
 
-// #Custom rainbow
+uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+
+//period between trail movement for rainbow_rain, milliseconds - for framerate locking
+unsigned long p = 40;
+
+byte prob=5; //probablility in percent of raindrop, 5 is 50%
+
 void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
                   uint8_t initialhue,
                   uint8_t deltahue,
@@ -47,6 +56,63 @@ void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
       }
     }
 }
+
+class RainbowRain
+{
+    //class members ini at startup of class
+    unsigned long previous_millis = millis();
+    uint8_t rainpos;
+    bool running = false;
+
+    struct CRGB * pleds; 
+    uint8_t num_per_strip;
+
+    //constructor
+  public:
+    RainbowRain(struct CRGB * ipleds, uint8_t inum_per_strip) {
+      pleds=ipleds;
+      num_per_strip=inum_per_strip;
+    }
+
+    void start(){
+      running = true;
+    }
+
+    void rain(bool dir=0) {
+      if (running){
+        if (millis() - previous_millis >= p) {
+          previous_millis = millis();
+          if (dir == 0){
+            rainpos++;
+            if (rainpos >= num_per_strip) {
+              rainpos = 0;
+              running = false;
+            }
+          }
+          else{
+            rainpos--;
+            if (rainpos >= num_per_strip) { //rainpos <= 0 # when rainpos goes -1 it wraps, not checking this lets us address the 0th led
+              rainpos = num_per_strip-1;
+              running = false;
+            }
+          }
+        pleds[rainpos] += CHSV( gHue, 255, 192);  
+      }
+      else{
+        // Do nothing as we are not running
+      }
+    }
+  }
+};
+
+//Instantiate rainbow rain for each strip
+RainbowRain rain1(leds_1, NUM_LEDS_PER_STRIP);
+RainbowRain rain2(leds_2, NUM_LEDS_PER_STRIP);
+RainbowRain rain3(leds_3, NUM_LEDS_PER_STRIP);
+RainbowRain rain4(leds_4, NUM_LEDS_PER_STRIP);
+RainbowRain rain5(leds_5, NUM_LEDS_PER_STRIP);
+RainbowRain rain6(leds_6, NUM_LEDS_PER_STRIP);
+
 
 void setup() {
   delay(3000); // 3 second delay for recovery
@@ -71,16 +137,23 @@ void setup() {
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
+
+  rain1.start();
+  rain2.start();
+  rain3.start();
+  rain4.start();
+  rain5.start();
+  rain6.start();
+  // rain7.start();
+  // rain8.start();
 }
-
-
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
-SimplePatternList gPatterns = { rainbow, confetti, juggle, bpm };
+SimplePatternList gPatterns = {rainbowrain};
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+
 
 void loop()
 {
@@ -93,8 +166,39 @@ void loop()
   FastLED.delay(1000/FRAMES_PER_SECOND);
 
   // do some periodic updates
-  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+3; } // slowly cycle the "base color" through the rainbow
-  EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
+  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+1; } // slowly cycle the "base color" through the rainbow
+  EVERY_N_SECONDS( 60 ) { nextPattern(); } // change patterns periodically
+  EVERY_N_MILLISECONDS( 800 ) { 
+    if (random(10)>prob){
+      rain1.start();
+    }
+  }
+   EVERY_N_MILLISECONDS( 1200 ) { 
+    if (random(10)>prob){
+      rain2.start();
+    }
+  }
+     EVERY_N_MILLISECONDS( 850 ) { 
+    if (random(10)>prob){
+      rain3.start();
+    }
+  }
+  EVERY_N_MILLISECONDS( 750 ) { 
+    if (random(10)>prob){
+      rain4.start();
+    }
+  }
+  EVERY_N_MILLISECONDS( 1300 ) { 
+    if (random(10)>prob){
+      rain5.start();
+    }
+  }
+    EVERY_N_MILLISECONDS( 1280 ) { 
+    if (random(10)>prob){
+      rain6.start();
+    }
+  }
+  
 }
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
@@ -107,57 +211,29 @@ void nextPattern()
 
 void rainbow()
 {
-  // FastLED's built-in rainbow generator
-  my_fill_rainbow( leds, NUM_LEDS, gHue, 7, 0);
-}
-
-void rainbowWithGlitter()
-{
-  // built-in FastLED rainbow, plus some random sparkly glitter
-  rainbow();
-  addGlitter(80);
-}
-
-void addGlitter( fract8 chanceOfGlitter)
-{
-  if( random8() < chanceOfGlitter) {
-    leds[ random16(NUM_LEDS) ] += CRGB::White;
-  }
+  my_fill_rainbow( leds_1, NUM_LEDS_PER_STRIP, gHue, 4);
+  my_fill_rainbow( leds_2, NUM_LEDS_PER_STRIP, gHue, 4,1);
+  my_fill_rainbow( leds_3, NUM_LEDS_PER_STRIP, gHue, 4);
+  my_fill_rainbow( leds_4, NUM_LEDS_PER_STRIP, gHue, 4,1);
+  my_fill_rainbow( leds_5, NUM_LEDS_PER_STRIP, gHue, 4);
+  my_fill_rainbow( leds_6, NUM_LEDS_PER_STRIP, gHue, 4,1);
 }
 
 void confetti()
 {
-  // random colored speckles that blink in and fade smoothly
   fadeToBlackBy( leds, NUM_LEDS, 10);
-  int pos = random16(NUM_LEDS);
-  leds[pos] += CHSV( gHue + random8(64), 200, 255);
+int pos = random16(NUM_LEDS);
+leds[pos] += CHSV( gHue + random8(64), 200, 255);
+
 }
 
-void sinelon()
+void rainbowrain()
 {
-  // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy( leds, NUM_LEDS, 20);
-  int pos = beatsin16( 13, 0, NUM_LEDS-1 );
-  leds[pos] += CHSV( gHue, 255, 192);
-}
-
-void bpm()
-{
-  // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
-  uint8_t BeatsPerMinute = 62;
-  CRGBPalette16 palette = PartyColors_p;
-  uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-  for( int i = 0; i < NUM_LEDS; i++) { //9948
-    leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
-  }
-}
-
-void juggle() {
-  // eight colored dots, weaving in and out of sync with each other
-  fadeToBlackBy( leds, NUM_LEDS, 20);
-  byte dothue = 0;
-  for( int i = 0; i < 8; i++) {
-    leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
-    dothue += 32;
-  }
+  fadeToBlackBy( leds, NUM_LEDS, 30);
+  rain1.rain(0);
+  rain2.rain(0);
+  rain3.rain(0);
+  rain4.rain(0);
+  rain5.rain(0);
+  rain6.rain(0);
 }
