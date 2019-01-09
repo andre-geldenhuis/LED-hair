@@ -12,7 +12,7 @@ FASTLED_USING_NAMESPACE
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
 //#define BRIGHTNESS          30
-#define BRIGHTNESS          20
+#define BRIGHTNESS          25
 #define FRAMES_PER_SECOND  120
 
 //Forward Declare Functions
@@ -48,17 +48,6 @@ void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
     }
 }
 
-void setup() {
-  delay(3000); // 3 second delay for recovery
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 3, starting at index 0 in the led array
-  FastLED.addLeds<NEOPIXEL, 13>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // set master brightness control
-  FastLED.setBrightness(BRIGHTNESS);
-}
-
-
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
@@ -67,19 +56,36 @@ SimplePatternList gPatterns = { rainbow};
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
+void setup() {
+  delay(200); // 3 second delay for recovery
+
+  // tell FastLED there's 60 NEOPIXEL leds on pin 3, starting at index 0 in the led array
+  FastLED.addLeds<NEOPIXEL, D3>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
+
+  // set master brightness control
+  FastLED.setBrightness(BRIGHTNESS);
+
+  my_fill_rainbow( leds, NUM_LEDS, gHue, 4, 0);
+  FastLED.show();
+  
+}
+
+
+
+
 void loop()
 {
-  // Call the current pattern function once, updating the 'leds' array
-  gPatterns[gCurrentPatternNumber]();
+  // // Call the current pattern function once, updating the 'leds' array
+  // gPatterns[gCurrentPatternNumber]();
 
-  // send the 'leds' array out to the actual LED strip
-  FastLED.show();
-  // insert a delay to keep the framerate modest
-  FastLED.delay(1000/FRAMES_PER_SECOND);
+  // // send the 'leds' array out to the actual LED strip
+  // FastLED.show();
+  // // insert a delay to keep the framerate modest
+  // FastLED.delay(1000/FRAMES_PER_SECOND);
 
-  // do some periodic updates
-  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+3; } // slowly cycle the "base color" through the rainbow
-  EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
+  // // do some periodic updates
+  // EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+3; } // slowly cycle the "base color" through the rainbow
+  // // EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
 }
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
