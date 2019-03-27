@@ -49,7 +49,7 @@ void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
 }
 
 void setup() {
-  delay(3000); // 3 second delay for recovery
+  delay(200); // 3 second delay for recovery
 
   // tell FastLED there's 60 NEOPIXEL leds on pin 3, starting at index 0 in the led array
   FastLED.addLeds<NEOPIXEL, 13>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
