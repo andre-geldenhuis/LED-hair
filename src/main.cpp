@@ -56,6 +56,9 @@ void setup() {
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
+
+  FastLED.setTemperature( Tungsten40W  ); // Set Temperature
+
 }
 
 
