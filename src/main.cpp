@@ -28,7 +28,7 @@ void sinelon();
 void bpm();
 void juggle();
 
-// #Custom rainbow
+
 void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
                   uint8_t initialhue,
                   uint8_t deltahue,
@@ -50,6 +50,42 @@ void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
       }
     }
 }
+
+class RainbowRain
+{
+    //class members ini at startup of class
+    unsigned long previous_millis = millis();
+    uint8_t rainpos;
+
+    struct CRGB * pleds; 
+    uint8_t num_per_strip;
+
+    //constructor
+  public:
+    RainbowRain(struct CRGB * ipleds, uint8_t inum_per_strip) {
+      pleds=ipleds;
+      num_per_strip=inum_per_strip;
+    }
+
+    void rain(bool dir=0) {
+      if (millis() - previous_millis >= p) {
+        previous_millis = millis();
+        if (dir == 0){
+          rainpos++;
+          if (rainpos >= num_per_strip) {
+            rainpos = 0;
+          }
+        }
+        else{
+          rainpos--;
+          if (rainpos >= num_per_strip) { //rainpos <= 0 # when rainpos goes -1 it wraps, not checking this lets us address the 0th led
+            rainpos = num_per_strip-1;
+          }
+        }
+      pleds[rainpos] += CHSV( gHue, 255, 192);  
+      }
+    }
+};
 
 void setup() {
   delay(200); // 3 second delay for recovery
