@@ -7,12 +7,15 @@ FASTLED_USING_NAMESPACE
 #endif
 
 #define NUM_STRIPS 1
-#define NUM_LEDS_PER_STRIP 223 //26+30 +26+30+55+26+30
+#define NUM_LEDS_PER_STRIP 150 //half due to virtual strips led_1 and led_2
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
+CRGBSet leds_1(leds, 0,                                                                    NUM_LEDS_PER_STRIP);
+CRGBSet leds_2(leds, NUM_LEDS_PER_STRIP,                                                   NUM_LEDS_PER_STRIP);
+
 //#define BRIGHTNESS          30
-#define BRIGHTNESS          20
+#define BRIGHTNESS          255
 #define FRAMES_PER_SECOND  120
 
 
@@ -27,7 +30,12 @@ void confetti();
 void sinelon();
 void bpm();
 void juggle();
+void rainbowrain();
 
+
+//period between trail movement for rainbow_rain, milliseconds - for framerate locking
+unsigned long p = 14;
+uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
                   uint8_t initialhue,
@@ -87,6 +95,10 @@ class RainbowRain
     }
 };
 
+//Instantiate rainbow rain for each strip
+RainbowRain rain1(leds_1, NUM_LEDS_PER_STRIP);
+RainbowRain rain2(leds_2, NUM_LEDS_PER_STRIP);
+
 void setup() {
   delay(200); // 3 second delay for recovery
 
@@ -104,10 +116,9 @@ void setup() {
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
-SimplePatternList gPatterns = { confetti, rainbow};
+SimplePatternList gPatterns = { rainbowrain};
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 void loop()
 {
@@ -216,4 +227,11 @@ void juggle() {
     leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
     dothue += 32;
   }
+}
+
+void rainbowrain()
+{
+  fadeToBlackBy( leds, NUM_LEDS, 17);
+  rain1.rain();
+  rain2.rain(1);
 }
