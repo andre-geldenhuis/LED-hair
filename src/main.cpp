@@ -11,6 +11,9 @@ FASTLED_USING_NAMESPACE
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
+CRGBSet leds_1(leds, 0,                                                                    111);
+CRGBSet leds_2(leds, 112,                                                   NUM_LEDS_PER_STRIP);
+
 //#define BRIGHTNESS          30
 #define BRIGHTNESS          20
 #define FRAMES_PER_SECOND  120
@@ -27,8 +30,13 @@ void confetti();
 void sinelon();
 void bpm();
 void juggle();
+void rainbowrain();
 
-// #Custom rainbow
+
+//period between trail movement for rainbow_rain, milliseconds - for framerate locking
+unsigned long p = 14;
+uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+
 void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
                   uint8_t initialhue,
                   uint8_t deltahue,
@@ -51,6 +59,45 @@ void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
     }
 }
 
+class RainbowRain
+{
+    //class members ini at startup of class
+    unsigned long previous_millis = millis();
+    uint8_t rainpos;
+
+    struct CRGB * pleds; 
+    uint8_t num_per_strip;
+
+    //constructor
+  public:
+    RainbowRain(struct CRGB * ipleds, uint8_t inum_per_strip) {
+      pleds=ipleds;
+      num_per_strip=inum_per_strip;
+    }
+
+    void rain(bool dir=0) {
+      if (millis() - previous_millis >= p) {
+        previous_millis = millis();
+        if (dir == 0){
+          rainpos++;
+          if (rainpos >= num_per_strip) {
+            rainpos = 0;
+          }
+        }
+        else{
+          rainpos--;
+          if (rainpos >= num_per_strip) { //rainpos <= 0 # when rainpos goes -1 it wraps, not checking this lets us address the 0th led
+            rainpos = num_per_strip-1;
+          }
+        }
+      pleds[rainpos] += CHSV( gHue, 255, 192);  
+      }
+    }
+};
+
+//Instantiate rainbow rain for each strip
+RainbowRain rain1(leds_1, 112);
+RainbowRain rain2(leds_2, 111);
 void setup() {
   delay(200); // 3 second delay for recovery
 
@@ -68,10 +115,9 @@ void setup() {
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
-SimplePatternList gPatterns = { confetti, rainbow};
+SimplePatternList gPatterns = { confetti, rainbow, rainbowrain};
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 void loop()
 {
@@ -108,9 +154,9 @@ void loop()
     FastLED.setBrightness(BRIGHTNESS);
     runleds=true;
    }
-   else{   //rainbow bright
-        gCurrentPatternNumber=1;
-        FastLED.setBrightness(50);
+   else{   //rainbow rain
+        gCurrentPatternNumber=2;
+        FastLED.setBrightness(BRIGHTNESS);
         runleds=true;
    }
   }
@@ -150,7 +196,18 @@ void confetti()
   // random colored speckles that blink in and fade smoothly
   fadeToBlackBy( leds, NUM_LEDS, 10);
   int pos = random16(NUM_LEDS);
-  leds[pos] += CHSV( gHue + random8(64), 200, 255);
+  int colornum = random8(3);
+  if(colornum==0){
+    // leds[pos] += CHSV( gHue + random8(64), 200, 255);
+    leds[pos] += CRGB::Aqua;
+  }
+  else if(colornum==1){
+    leds[pos] += CRGB::White;
+  }
+  else{
+    leds[pos] += leds[pos] += CRGB::DeepPink;
+  }
+  
 }
 
 void sinelon()
@@ -180,4 +237,11 @@ void juggle() {
     leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
     dothue += 32;
   }
+}
+
+void rainbowrain()
+{
+  fadeToBlackBy( leds, NUM_LEDS, 17);
+  rain1.rain(1);
+  rain2.rain();
 }
