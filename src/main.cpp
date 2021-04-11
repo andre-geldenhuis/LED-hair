@@ -66,6 +66,7 @@ void bpm();
 void juggle();
 void rainbowrain();
 void huefill();
+void whiteroom();
 
 
 //period between trail movement for rainbow_rain, milliseconds - for framerate locking
@@ -155,7 +156,8 @@ void setup() {
   delay(200); // 3 second delay for recovery
 
   // tell FastLED there's 60 NEOPIXEL leds on pin 3, starting at index 0 in the led array
-  FastLED.addLeds<NEOPIXEL, 18>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
+  //FastLED.addLeds<NEOPIXEL, 18>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<WS2811, 18, RGB>(leds, NUM_LEDS_PER_STRIP).setCorrection(Typical8mmPixel);
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
@@ -195,7 +197,7 @@ void setup() {
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
-SimplePatternList gPatterns = { confetti, rainbow, rainbowrain, huefill };
+SimplePatternList gPatterns = { confetti, rainbow, rainbowrain, huefill, whiteroom };
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
@@ -235,15 +237,22 @@ void loop()
     switch(modeval){
       case 0 ...1000:
         gCurrentPatternNumber=0;
+        // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
         break;
       case 1001 ...2000:
         gCurrentPatternNumber=1;
+        // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
         break;
       case 2001 ...3000:
         gCurrentPatternNumber=2;
+        // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
+        break;
+      case 3001 ...3500:
+        gCurrentPatternNumber=3;
+        // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
         break;
       default:
-        gCurrentPatternNumber=3;
+        gCurrentPatternNumber=4;
         break;
     }
   }
@@ -423,4 +432,27 @@ void rainbowrain()
     rain43.rain(1);
     rain44.rain();
   }
+}
+
+void whiteroom(){
+    // CHSV hsv;
+    // hsv.hue = 0;
+    // hsv.val = 255;
+    // hsv.sat = 0;
+
+    fill_solid(leds, NUM_LEDS, CRGB::White);
+  switch(modval){
+      case 0 ...1000:
+        FastLED.setTemperature( Candle  ); // Set Temperature
+        break;
+      case 1001 ...2000:
+          FastLED.setTemperature( Tungsten40W  ); // Set Temperature
+        break;
+      case 2001 ...3000:
+        FastLED.setTemperature( Tungsten40W  ); // Set Temperature
+        break;
+      default:
+        FastLED.setTemperature(0xFF7029);
+        break;
+    }
 }
