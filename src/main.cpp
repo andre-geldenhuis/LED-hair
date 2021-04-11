@@ -7,19 +7,25 @@ FASTLED_USING_NAMESPACE
 #endif
 
 #define NUM_STRIPS 1
-#define NUM_LEDS_PER_STRIP 150 //half due to virtual strips led_1 and led_2
+#define NUM_LEDS_PER_STRIP 200
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
+
+#define MODE_POT 34
+#define MOD_POT 35
+#define BRIGHT_POT 32
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
-CRGBSet leds_1(leds, 0,                                                                    NUM_LEDS_PER_STRIP);
-CRGBSet leds_2(leds, NUM_LEDS_PER_STRIP,                                                   NUM_LEDS_PER_STRIP);
+CRGBSet leds_1(leds, 0,                                                                    99);
+CRGBSet leds_2(leds, 100,                                                   NUM_LEDS_PER_STRIP);
 
 //#define BRIGHTNESS          30
 #define BRIGHTNESS          255
 #define FRAMES_PER_SECOND  120
 
 
-int potval = 0;
+int modeval = 0;
+int modval = 0;
+int brightval = 0;
 bool runleds = true;
 //Forward Declare Functions
 void nextPattern();
@@ -31,6 +37,7 @@ void sinelon();
 void bpm();
 void juggle();
 void rainbowrain();
+void huefill();
 
 
 //period between trail movement for rainbow_rain, milliseconds - for framerate locking
@@ -95,20 +102,30 @@ class RainbowRain
     }
 };
 
-//Instantiate rainbow rain for each strip
-RainbowRain rain1(leds_1, NUM_LEDS_PER_STRIP);
-RainbowRain rain2(leds_2, NUM_LEDS_PER_STRIP);
 
+void huefill()
+{
+    CHSV hsv;
+    hsv.hue = (map(modval, 0, 4095, 0, 255));
+    hsv.val = 255;
+    hsv.sat = 240;
+    fill_solid(leds, NUM_LEDS, hsv);
+}
+
+//Instantiate rainbow rain for each strip
+RainbowRain rain1(leds_1, 100);
+RainbowRain rain2(leds_2, 100);
 void setup() {
   delay(200); // 3 second delay for recovery
 
   // tell FastLED there's 60 NEOPIXEL leds on pin 3, starting at index 0 in the led array
-  FastLED.addLeds<NEOPIXEL, 23>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<NEOPIXEL, 18>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
 
   FastLED.setTemperature( Tungsten40W  ); // Set Temperature
+  Serial.begin(115200);
 
 }
 
@@ -116,7 +133,7 @@ void setup() {
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
-SimplePatternList gPatterns = { rainbowrain};
+SimplePatternList gPatterns = { confetti, rainbow, rainbowrain, huefill };
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
@@ -139,27 +156,36 @@ void loop()
   // do some periodic updates
   EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+3; 
   } // slowly cycle the "base color" through the rainbow
+  EVERY_N_MILLISECONDS(300){
+    Serial.println(modval);
+  }
   EVERY_N_MILLISECONDS ( 100 ){
-    potval = analogRead(10);
-    if(potval <=250){
+    modeval   = analogRead(MODE_POT);
+    modval    = analogRead(MOD_POT);
+    brightval = analogRead(BRIGHT_POT);
+    if(brightval <=200){
      runleds=false;
      FastLED.setBrightness(0);
-   }
-   else if(potval<=500){
-     gCurrentPatternNumber=0;
-     FastLED.setBrightness(BRIGHTNESS);
-     runleds=true;
-   }
-   else if(potval<=750){  // rainbow dim
-    gCurrentPatternNumber=1;
-    FastLED.setBrightness(BRIGHTNESS);
-    runleds=true;
-   }
-   else{   //rainbow bright
+    }
+    else{
+      FastLED.setBrightness(map(brightval, 0, 4095, 0, 255));
+      runleds=true;
+    }
+
+    switch(modeval){
+      case 0 ...1000:
+        gCurrentPatternNumber=0;
+        break;
+      case 1001 ...2000:
         gCurrentPatternNumber=1;
-        FastLED.setBrightness(50);
-        runleds=true;
-   }
+        break;
+      case 2001 ...3000:
+        gCurrentPatternNumber=2;
+        break;
+      default:
+        gCurrentPatternNumber=3;
+        break;
+    }
   }
   // EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
 }
@@ -197,7 +223,18 @@ void confetti()
   // random colored speckles that blink in and fade smoothly
   fadeToBlackBy( leds, NUM_LEDS, 10);
   int pos = random16(NUM_LEDS);
-  leds[pos] += CHSV( gHue + random8(64), 200, 255);
+  int colornum = random8(3);
+  if(colornum==0){
+    // leds[pos] += CHSV( gHue + random8(64), 200, 255);
+    leds[pos] += CRGB::Aqua;
+  }
+  else if(colornum==1){
+    leds[pos] += CRGB::White;
+  }
+  else{
+    leds[pos] += leds[pos] += CRGB::DeepPink;
+  }
+  
 }
 
 void sinelon()
@@ -232,6 +269,6 @@ void juggle() {
 void rainbowrain()
 {
   fadeToBlackBy( leds, NUM_LEDS, 17);
-  rain1.rain();
-  rain2.rain(1);
+  rain1.rain(1);
+  rain2.rain();
 }
