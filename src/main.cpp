@@ -1,5 +1,8 @@
 #include "FastLED.h"
 #include "secrets.h"
+// in secrets.h
+// #define WIFI_SSID "ssid"
+// #define WIFI_PASSWORD "pass"
 
 
 //#Temp Wifi code
