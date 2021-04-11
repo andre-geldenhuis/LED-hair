@@ -36,8 +36,15 @@ FASTLED_USING_NAMESPACE
 #define BRIGHT_POT 32
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
+//Dual rainbow rain substrips
 CRGBSet leds_1(leds, 0,                                                                    99);
 CRGBSet leds_2(leds, 100,                                                   NUM_LEDS_PER_STRIP);
+
+//Quad rainbow rain substrips
+CRGBSet leds_41(leds, 0,                                                                    50);
+CRGBSet leds_42(leds, 50,                                                   100);
+CRGBSet leds_43(leds, 100,                                                                    150);
+CRGBSet leds_44(leds, 150,                                                   NUM_LEDS_PER_STRIP);
 
 //#define BRIGHTNESS          30
 #define BRIGHTNESS          255
@@ -136,6 +143,14 @@ void huefill()
 //Instantiate rainbow rain for each strip
 RainbowRain rain1(leds_1, 100);
 RainbowRain rain2(leds_2, 100);
+
+//Quad Rain option
+//Instantiate rainbow rain for each strip
+RainbowRain rain41(leds_41, 50);
+RainbowRain rain42(leds_42, 50);
+RainbowRain rain43(leds_43, 50);
+RainbowRain rain44(leds_44, 50);
+
 void setup() {
   delay(200); // 3 second delay for recovery
 
@@ -355,10 +370,57 @@ void juggle() {
 
 void rainbowrain()
 {
+  bool quad=false;
   
+    switch(modval){
+      case 0 ...500:
+        p = 20;
+        fadeToBlackBy( leds, NUM_LEDS, 10);
+        break;
+      case 501 ...1000:
+        p = 30;
+        fadeToBlackBy( leds, NUM_LEDS, 8);
+        break;
+      case 1001 ...1500:
+        p = 40;
+        fadeToBlackBy( leds, NUM_LEDS, 4);
+        break;
+      case 1501 ...2000:
+        p = 50;
+        fadeToBlackBy( leds, NUM_LEDS, 1);
+        break;
+      case 2001 ...2500:
+        p = 20;
+        quad=true;
+        fadeToBlackBy( leds, NUM_LEDS, 10);
+        break;
+      case 2501 ...3000:
+         p = 30;
+         quad=true;
+         fadeToBlackBy( leds, NUM_LEDS, 8);
+        break;
+      case 3001 ...3500:
+         p = 40;
+         fadeToBlackBy( leds, NUM_LEDS, 4);
+         quad=true;
+        break;
+      default:
+         p = 50;
+         quad=true;
+         fadeToBlackBy( leds, NUM_LEDS, 1);
+        break;
+    }
     // do some periodic updates
   EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+1; }
-  fadeToBlackBy( leds, NUM_LEDS, 17);
-  rain1.rain(1);
-  rain2.rain();
+  
+  if(!quad){
+    rain1.rain(1);
+    rain2.rain();
+  }
+  else{
+    rain41.rain(1);
+    rain42.rain();
+    rain43.rain(1);
+    rain44.rain();
+  }
 }
