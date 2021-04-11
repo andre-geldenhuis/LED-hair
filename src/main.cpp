@@ -1,28 +1,4 @@
 #include "FastLED.h"
-#include "secrets.h"
-// in secrets.h
-// #define WIFI_SSID "ssid"
-// #define WIFI_PASSWORD "pass"
-
-
-//#Temp Wifi code
-//#################################
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h>
-
-const char* ssid = WIFI_SSID;
-const char* password = WIFI_PASSWORD;
-// Set your Static IP address
-IPAddress local_IP(192, 168, 1, 20);
-// Set your Gateway IP address
-IPAddress gateway(192, 168, 1, 1);
-
-IPAddress subnet(255, 255, 0, 0);
-
-AsyncWebServer server(80);
-//############################
 
 FASTLED_USING_NAMESPACE
 
@@ -167,33 +143,6 @@ void setup() {
 
   FastLED.setTemperature( Tungsten40W  ); // Set Temperature
   Serial.begin(115200);
-
-  // Temp Wifi Stuff
-  //#######################################
-  WiFi.config(local_IP, gateway, subnet);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  Serial.println("");
-
-  // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Hi! I am ESP32.");
-  });
-
-  AsyncElegantOTA.begin(&server);    // Start ElegantOTA
-  server.begin();
-  Serial.println("HTTP server started");
-  //###############################################
 }
 
 
@@ -272,9 +221,6 @@ void nextPattern()
 
 void rainbow()
 {
-  // server.on("/debug", HTTP_GET, [](AsyncWebServerRequest *request){
-  //   request->send(200, "text/plain", String(modval));
-  // });
   int8_t huerate=0;
   bool split=false;
   
