@@ -1,4 +1,25 @@
 #include "FastLED.h"
+#include "secrets.h"
+
+
+//#Temp Wifi code
+//#################################
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncElegantOTA.h>
+
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
+// Set your Static IP address
+IPAddress local_IP(192, 168, 1, 20);
+// Set your Gateway IP address
+IPAddress gateway(192, 168, 1, 1);
+
+IPAddress subnet(255, 255, 0, 0);
+
+AsyncWebServer server(80);
+//############################
 
 FASTLED_USING_NAMESPACE
 
@@ -127,6 +148,32 @@ void setup() {
   FastLED.setTemperature( Tungsten40W  ); // Set Temperature
   Serial.begin(115200);
 
+  // Temp Wifi Stuff
+  //#######################################
+  WiFi.config(local_IP, gateway, subnet);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "Hi! I am ESP32.");
+  });
+
+  AsyncElegantOTA.begin(&server);    // Start ElegantOTA
+  server.begin();
+  Serial.println("HTTP server started");
+  //###############################################
 }
 
 
@@ -139,6 +186,7 @@ uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
 void loop()
 {
+  AsyncElegantOTA.loop();
   if(runleds){
     // Call the current pattern function once, updating the 'leds' array
     gPatterns[gCurrentPatternNumber]();
@@ -153,9 +201,6 @@ void loop()
   // insert a delay to keep the framerate modest
   FastLED.delay(1000/FRAMES_PER_SECOND);
 
-  // do some periodic updates
-  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+3; 
-  } // slowly cycle the "base color" through the rainbow
   EVERY_N_MILLISECONDS(300){
     Serial.println(modval);
   }
@@ -200,8 +245,50 @@ void nextPattern()
 
 void rainbow()
 {
+  // server.on("/debug", HTTP_GET, [](AsyncWebServerRequest *request){
+  //   request->send(200, "text/plain", String(modval));
+  // });
+  int8_t huerate=0;
+  bool split=false;
+  
+    switch(modval){
+      case 0 ...500:
+        huerate=0;
+        break;
+      case 501 ...1000:
+        huerate=1;
+        break;
+      case 1001 ...1500:
+        huerate=2;
+        break;
+      case 1501 ...2000:
+        huerate=3;
+        break;
+      case 2001 ...2500:
+        huerate=-3;
+        break;
+      case 2501 ...3000:
+        huerate=-2;
+        break;
+      case 3001 ...3500:
+        huerate=-1;
+        break;
+      default:
+        huerate=1;
+        split=true;
+        break;
+    }
+    // do some periodic updates
+  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+huerate; } 
+
+  if(!split){
   // FastLED's built-in rainbow generator
-  my_fill_rainbow( leds, NUM_LEDS, gHue, 4, 0);
+    my_fill_rainbow( leds, NUM_LEDS, gHue, 4, 0);
+  }
+  else{
+    my_fill_rainbow( leds_1, NUM_LEDS/2, gHue, 5, 0);
+    my_fill_rainbow( leds_2, NUM_LEDS/2, gHue, 5, 1);
+  }
 }
 
 void rainbowWithGlitter()
@@ -268,6 +355,9 @@ void juggle() {
 
 void rainbowrain()
 {
+  
+    // do some periodic updates
+  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+1; }
   fadeToBlackBy( leds, NUM_LEDS, 17);
   rain1.rain(1);
   rain2.rain();
