@@ -7,7 +7,7 @@ FASTLED_USING_NAMESPACE
 #endif
 
 #define NUM_STRIPS 1
-#define NUM_LEDS_PER_STRIP 200
+#define NUM_LEDS_PER_STRIP 300
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
 
 #define MODE_POT 34
@@ -16,14 +16,14 @@ FASTLED_USING_NAMESPACE
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
 //Dual rainbow rain substrips
-CRGBSet leds_1(leds, 0,                                                                    99);
-CRGBSet leds_2(leds, 100,                                                   NUM_LEDS_PER_STRIP);
+CRGBSet leds_1(leds, 0,                                                                    150);
+CRGBSet leds_2(leds, 150,                                                   NUM_LEDS_PER_STRIP);
 
 //Quad rainbow rain substrips
-CRGBSet leds_41(leds, 0,                                                                    50);
-CRGBSet leds_42(leds, 50,                                                   100);
-CRGBSet leds_43(leds, 100,                                                                    150);
-CRGBSet leds_44(leds, 150,                                                   NUM_LEDS_PER_STRIP);
+CRGBSet leds_41(leds, 0,                                                                    75);
+CRGBSet leds_42(leds, 75,                                                   150);
+CRGBSet leds_43(leds, 150,                                                                    225);
+CRGBSet leds_44(leds, 225,                                                   NUM_LEDS_PER_STRIP);
 
 //#define BRIGHTNESS          30
 #define BRIGHTNESS          255
