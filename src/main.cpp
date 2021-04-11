@@ -155,7 +155,6 @@ uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
 void loop()
 {
-  AsyncElegantOTA.loop();
   if(runleds){
     // Call the current pattern function once, updating the 'leds' array
     gPatterns[gCurrentPatternNumber]();
