@@ -121,15 +121,15 @@ void huefill()
 }
 
 //Instantiate rainbow rain for each strip
-RainbowRain rain1(leds_1, 100);
-RainbowRain rain2(leds_2, 100);
+RainbowRain rain1(leds_1, 150);
+RainbowRain rain2(leds_2, 150);
 
 //Quad Rain option
 //Instantiate rainbow rain for each strip
-RainbowRain rain41(leds_41, 50);
-RainbowRain rain42(leds_42, 50);
-RainbowRain rain43(leds_43, 50);
-RainbowRain rain44(leds_44, 50);
+RainbowRain rain41(leds_41, 75);
+RainbowRain rain42(leds_42, 75);
+RainbowRain rain43(leds_43, 75);
+RainbowRain rain44(leds_44, 75);
 
 void setup() {
   delay(200); // 3 second delay for recovery
