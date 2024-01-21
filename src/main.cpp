@@ -1,5 +1,6 @@
 #include <OctoWS2811.h>
 #include "FastLED.h"
+#include "OctoWS2811FastLED.h"
 
 FASTLED_USING_NAMESPACE
 
@@ -18,52 +19,13 @@ DMAMEM int displayMemory[ledsPerStrip * numPins * 3 / 4];
 int drawingMemory[ledsPerStrip * numPins * 3 / 4];
 OctoWS2811 octo(ledsPerStrip, displayMemory, drawingMemory, WS2811_RGB | WS2811_800kHz, numPins, pinList);
 
-// Octo fastled controller
-template <EOrder RGB_ORDER = GRB,
-          uint8_t CHIP = WS2811_800kHz>
-class CTeensy4Controller : public CPixelLEDController<RGB_ORDER, 8, 0xFF>
-{
-    OctoWS2811 *pocto;
 
-public:
-    CTeensy4Controller(OctoWS2811 *_pocto)
-        : pocto(_pocto){};
-
-    virtual void init() {}
-    virtual void showPixels(PixelController<RGB_ORDER, 8, 0xFF> &pixels)
-    {
-
-        uint32_t i = 0;
-        while (pixels.has(1))
-        {
-            uint8_t r = pixels.loadAndScale0();
-            uint8_t g = pixels.loadAndScale1();
-            uint8_t b = pixels.loadAndScale2();
-            pocto->setPixel(i++, r, g, b);
-            pixels.stepDithering();
-            pixels.advanceData();
-        }
-
-        pocto->show();
-    }
-};
 
 
 
 // #define NUM_STRIPS 8
 #define NUM_LEDS_PER_STRIP 160 
 #define NUM_LEDS 160
-CRGB leds1[NUM_LEDS_PER_STRIP];
-CRGB leds2[NUM_LEDS_PER_STRIP];
-// CRGB leds3[NUM_LEDS_PER_STRIP];
-// CRGB leds4[NUM_LEDS_PER_STRIP];
-// CRGB leds5[NUM_LEDS_PER_STRIP];
-// CRGB leds6[NUM_LEDS_PER_STRIP];
-// CRGB leds7[NUM_LEDS_PER_STRIP];
-// CRGB leds8[NUM_LEDS_PER_STRIP];
-
-// CRGBSet leds_1(leds, 0,                                                                    111);
-// CRGBSet leds_2(leds, 112,                                                   NUM_LEDS_PER_STRIP);
 
 //#define BRIGHTNESS          30
 #define BRIGHTNESS          10
@@ -110,52 +72,47 @@ void my_fill_rainbow(CRGB *leds, int totalLeds, uint8_t initialhue, uint8_t delt
 }
 
 
-// class RainbowRain
-// {
-//     //class members ini at startup of class
-//     unsigned long previous_millis = millis();
-//     uint8_t rainpos;
+class RainbowRain
+{
+    //class members ini at startup of class
+    unsigned long previous_millis = millis();
+    uint8_t rainpos;
 
-//     struct CRGB * pleds; 
-//     uint8_t num_per_strip;
+    struct CRGB * pleds; 
+    uint8_t num_per_strip;
 
-//     //constructor
-//   public:
-//     RainbowRain(struct CRGB * ipleds, uint8_t inum_per_strip) {
-//       pleds=ipleds;
-//       num_per_strip=inum_per_strip;
-//     }
+    //constructor
+  public:
+    RainbowRain(struct CRGB * ipleds, uint8_t inum_per_strip) {
+      pleds=ipleds;
+      num_per_strip=inum_per_strip;
+    }
 
-//     void rain(bool dir=0) {
-//       if (millis() - previous_millis >= p) {
-//         previous_millis = millis();
-//         if (dir == 0){
-//           rainpos++;
-//           if (rainpos >= num_per_strip) {
-//             rainpos = 0;
-//           }
-//         }
-//         else{
-//           rainpos--;
-//           if (rainpos >= num_per_strip) { //rainpos <= 0 # when rainpos goes -1 it wraps, not checking this lets us address the 0th led
-//             rainpos = num_per_strip-1;
-//           }
-//         }
-//       pleds[rainpos] += CHSV( gHue, 255, 192);  
-//       }
-//     }
-// };
+    void rain(bool dir=0) {
+      if (millis() - previous_millis >= p) {
+        previous_millis = millis();
+        if (dir == 0){
+          rainpos++;
+          if (rainpos >= num_per_strip) {
+            rainpos = 0;
+          }
+        }
+        else{
+          rainpos--;
+          if (rainpos >= num_per_strip) { //rainpos <= 0 # when rainpos goes -1 it wraps, not checking this lets us address the 0th led
+            rainpos = num_per_strip-1;
+          }
+        }
+      pleds[rainpos] += CHSV( gHue, 255, 192);  
+      }
+    }
+};
 
 //Instantiate rainbow rain for each strip
 
 // RainbowRain rain1(leds1, 160);
 // RainbowRain rain2(leds2, 160);
-// RainbowRain rain3(leds3, 160);
-// RainbowRain rain4(leds4, 160);
-// RainbowRain rain5(leds5, 160);
-// RainbowRain rain6(leds6, 160);
-// RainbowRain rain7(leds7, 160);
-// RainbowRain rain8(leds8, 160);
+
 
 CTeensy4Controller<GRB, WS2811_800kHz> *pcontroller;
 void setup() {
@@ -166,18 +123,6 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);
   FastLED.addLeds(pcontroller, rgbarray, numPins * ledsPerStrip);
 
-
-
-  // tell FastLED there's 60 NEOPIXEL leds on pin 3, starting at index 0 in the led array
-  // FastLED.addLeds<SK6812, 2>(leds1, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-  // FastLED.addLeds<SK6812, 3>(leds2, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-  // FastLED.addLeds<SK6812, 4>(leds3, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-  // FastLED.addLeds<SK6812, 5>(leds4, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
-  // FastLED.addLeds<SK6812, 6>(leds5, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-  // FastLED.addLeds<SK6812, 7>(leds6, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-  // FastLED.addLeds<SK6812, 8>(leds7, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-  // FastLED.addLeds<SK6812, 9>(leds8, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
 // FastLED.setMaxRefreshRate(120);
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
@@ -208,7 +153,7 @@ void loop()
 //         }
 
 //         // Set the current pixel to red
-//         rgbarray[i] = CRGB::Blue;
+//         rgbarray[i] = CRGB::Red;
 
 //         // Update the LEDs
 //         FastLED.show();
@@ -229,8 +174,6 @@ void loop()
 
   // send the 'leds' array out to the actual LED strip
   FastLED.show();
-  // insert a delay to keep the framerate modest
-  // FastLED.delay(1000/FRAMES_PER_SECOND);
 
   // do some periodic updates
   EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+1; 
