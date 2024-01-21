@@ -19,7 +19,7 @@ int drawingMemory[ledsPerStrip * numPins * 3 / 4];
 OctoWS2811 octo(ledsPerStrip, displayMemory, drawingMemory, WS2811_RGB | WS2811_800kHz, numPins, pinList);
 
 // Octo fastled controller
-template <EOrder RGB_ORDER = RGB,
+template <EOrder RGB_ORDER = GRB,
           uint8_t CHIP = WS2811_800kHz>
 class CTeensy4Controller : public CPixelLEDController<RGB_ORDER, 8, 0xFF>
 {
@@ -53,8 +53,8 @@ public:
 // #define NUM_STRIPS 8
 #define NUM_LEDS_PER_STRIP 160 
 #define NUM_LEDS 160
-// CRGB leds1[NUM_LEDS_PER_STRIP];
-// CRGB leds2[NUM_LEDS_PER_STRIP];
+CRGB leds1[NUM_LEDS_PER_STRIP];
+CRGB leds2[NUM_LEDS_PER_STRIP];
 // CRGB leds3[NUM_LEDS_PER_STRIP];
 // CRGB leds4[NUM_LEDS_PER_STRIP];
 // CRGB leds5[NUM_LEDS_PER_STRIP];
@@ -73,78 +73,78 @@ public:
 int potval = 0;
 bool runleds = true;
 //Forward Declare Functions
-void nextPattern();
-void rainbow();
-void rainbowWithGlitter();
-void addGlitter( fract8 chanceOfGlitter);
-void confetti();
-void sinelon();
-void bpm();
-void juggle();
-void rainbowrain();
+// void nextPattern();
+// void rainbow();
+// void rainbowWithGlitter();
+// void addGlitter( fract8 chanceOfGlitter);
+// void confetti();
+// void sinelon();
+// void bpm();
+// void juggle();
+// void rainbowrain();
 
 
 //period between trail movement for rainbow_rain, milliseconds - for framerate locking
 unsigned long p = 14;
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
-void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
-                  uint8_t initialhue,
-                  uint8_t deltahue,
-                bool dir=0 )
-{
-    CHSV hsv;
-    hsv.hue = initialhue;
-    hsv.val = 255;
-    hsv.sat = 240;
-    if(dir==1){
-      for( int i = 0; i < numToFill; i++) {
-          pFirstLED[i] = hsv;
-          hsv.hue += deltahue;
-      }
-    }else{
-      for( int i = numToFill-1; i >= 0; i--) {
-          pFirstLED[i] = hsv;
-          hsv.hue += deltahue;
-      }
-    }
-}
+// void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
+//                   uint8_t initialhue,
+//                   uint8_t deltahue,
+//                 bool dir=0 )
+// {
+//     CHSV hsv;
+//     hsv.hue = initialhue;
+//     hsv.val = 255;
+//     hsv.sat = 240;
+//     if(dir==1){
+//       for( int i = 0; i < numToFill; i++) {
+//           pFirstLED[i] = hsv;
+//           hsv.hue += deltahue;
+//       }
+//     }else{
+//       for( int i = numToFill-1; i >= 0; i--) {
+//           pFirstLED[i] = hsv;
+//           hsv.hue += deltahue;
+//       }
+//     }
+// }
 
-class RainbowRain
-{
-    //class members ini at startup of class
-    unsigned long previous_millis = millis();
-    uint8_t rainpos;
+// class RainbowRain
+// {
+//     //class members ini at startup of class
+//     unsigned long previous_millis = millis();
+//     uint8_t rainpos;
 
-    struct CRGB * pleds; 
-    uint8_t num_per_strip;
+//     struct CRGB * pleds; 
+//     uint8_t num_per_strip;
 
-    //constructor
-  public:
-    RainbowRain(struct CRGB * ipleds, uint8_t inum_per_strip) {
-      pleds=ipleds;
-      num_per_strip=inum_per_strip;
-    }
+//     //constructor
+//   public:
+//     RainbowRain(struct CRGB * ipleds, uint8_t inum_per_strip) {
+//       pleds=ipleds;
+//       num_per_strip=inum_per_strip;
+//     }
 
-    void rain(bool dir=0) {
-      if (millis() - previous_millis >= p) {
-        previous_millis = millis();
-        if (dir == 0){
-          rainpos++;
-          if (rainpos >= num_per_strip) {
-            rainpos = 0;
-          }
-        }
-        else{
-          rainpos--;
-          if (rainpos >= num_per_strip) { //rainpos <= 0 # when rainpos goes -1 it wraps, not checking this lets us address the 0th led
-            rainpos = num_per_strip-1;
-          }
-        }
-      pleds[rainpos] += CHSV( gHue, 255, 192);  
-      }
-    }
-};
+//     void rain(bool dir=0) {
+//       if (millis() - previous_millis >= p) {
+//         previous_millis = millis();
+//         if (dir == 0){
+//           rainpos++;
+//           if (rainpos >= num_per_strip) {
+//             rainpos = 0;
+//           }
+//         }
+//         else{
+//           rainpos--;
+//           if (rainpos >= num_per_strip) { //rainpos <= 0 # when rainpos goes -1 it wraps, not checking this lets us address the 0th led
+//             rainpos = num_per_strip-1;
+//           }
+//         }
+//       pleds[rainpos] += CHSV( gHue, 255, 192);  
+//       }
+//     }
+// };
 
 //Instantiate rainbow rain for each strip
 
@@ -157,11 +157,11 @@ class RainbowRain
 // RainbowRain rain7(leds7, 160);
 // RainbowRain rain8(leds8, 160);
 
-CTeensy4Controller<RGB, WS2811_800kHz> *pcontroller;
+CTeensy4Controller<GRB, WS2811_800kHz> *pcontroller;
 void setup() {
   delay(200); //delay for recovery
   octo.begin();
-  pcontroller = new CTeensy4Controller<RGB, WS2811_800kHz>(&octo);
+  pcontroller = new CTeensy4Controller<GRB, WS2811_800kHz>(&octo);
 
   FastLED.setBrightness(BRIGHTNESS);
   FastLED.addLeds(pcontroller, rgbarray, numPins * ledsPerStrip);
@@ -178,7 +178,7 @@ void setup() {
   // FastLED.addLeds<SK6812, 7>(leds6, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
   // FastLED.addLeds<SK6812, 8>(leds7, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
   // FastLED.addLeds<SK6812, 9>(leds8, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-// FastLED.setMaxRefreshRate(120);
+FastLED.setMaxRefreshRate(120);
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
 
@@ -187,32 +187,54 @@ void setup() {
 }
 
 
-// List of patterns to cycle through.  Each is defined as a separate function below.
-typedef void (*SimplePatternList[])();
-//SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
-SimplePatternList gPatterns = { confetti, rainbow, rainbowrain};
+// // List of patterns to cycle through.  Each is defined as a separate function below.
+// typedef void (*SimplePatternList[])();
+// //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
+// SimplePatternList gPatterns = { confetti, rainbow, rainbowrain};
 
-uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
+// uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
+
+const int specificStrip = 0; // For example, the 4th strip (zero-based)
+const int startIdx = specificStrip * ledsPerStrip;
+const int endIdx = (specificStrip + 1) * ledsPerStrip - 1;
 void loop()
 {
-  if(runleds){
-    // Call the current pattern function once, updating the 'leds' array
-    gPatterns[gCurrentPatternNumber]();
-  }
-  else{
-    // fadeToBlackBy( leds, NUM_LEDS, 10);  
-  }
+// Example: Move a red dot along the specific strip
+    for (int i = startIdx; i <= endIdx; i++) {
+        // Clear the strip
+        for (int j = startIdx; j <= endIdx; j++) {
+            rgbarray[j] = CRGB::Black;
+        }
+
+        // Set the current pixel to red
+        rgbarray[i] = CRGB::Blue;
+
+        // Update the LEDs
+        FastLED.show();
+
+        // Wait a little bit
+        // delay(50);
+    }
+
+
+  // if(runleds){
+  //   // Call the current pattern function once, updating the 'leds' array
+  //   gPatterns[gCurrentPatternNumber]();
+  // }
+  // else{
+  //   // fadeToBlackBy( leds, NUM_LEDS, 10);  
+  // }
   
 
   // send the 'leds' array out to the actual LED strip
-  FastLED.show();
+  // FastLED.show();
   // insert a delay to keep the framerate modest
   // FastLED.delay(1000/FRAMES_PER_SECOND);
 
   // do some periodic updates
-  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+1; 
-  } // slowly cycle the "base color" through the rainbow
+  // EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+1; 
+  // } // slowly cycle the "base color" through the rainbow
 
 
   // EVERY_N_MILLISECONDS ( 100 ){
@@ -237,101 +259,105 @@ void loop()
   //       runleds=true;
   //  }
   // }
-          gCurrentPatternNumber=1;
-        FastLED.setBrightness(BRIGHTNESS);
-        runleds=true;
+
+
+
+
+        //   gCurrentPatternNumber=1;
+        // FastLED.setBrightness(BRIGHTNESS);
+        // runleds=true;
 
 
   // EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
 }
 
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+// #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
-void nextPattern()
-{
-  // add one to the current pattern number, and wrap around at the end
-  gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
-}
+// void nextPattern()
+// {
+//   // add one to the current pattern number, and wrap around at the end
+//   gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
+// }
 
-void rainbow()
-{
-  // FastLED's built-in rainbow generator
-  my_fill_rainbow( leds1, NUM_LEDS, gHue, 4, 0);
-  my_fill_rainbow( leds2, NUM_LEDS, gHue, 4, 0);
-  my_fill_rainbow( leds3, NUM_LEDS, gHue, 4, 0);
-  my_fill_rainbow( leds4, NUM_LEDS, gHue, 4, 0);
+// void rainbow()
+// {
+//   // FastLED's built-in rainbow generator
+//   my_fill_rainbow( leds1, NUM_LEDS, gHue, 4, 0);
+//   my_fill_rainbow( leds2, NUM_LEDS, gHue, 4, 0);
+//   my_fill_rainbow( leds3, NUM_LEDS, gHue, 4, 0);
+//   my_fill_rainbow( leds4, NUM_LEDS, gHue, 4, 0);
 
-  // my_fill_rainbow( leds5, NUM_LEDS, gHue, 4, 0);
-  // my_fill_rainbow( leds6, NUM_LEDS, gHue, 4, 0);
-  // my_fill_rainbow( leds7, NUM_LEDS, gHue, 4, 0);
-  // my_fill_rainbow( leds8, NUM_LEDS, gHue, 4, 0);
-}
+//   // my_fill_rainbow( leds5, NUM_LEDS, gHue, 4, 0);
+//   // my_fill_rainbow( leds6, NUM_LEDS, gHue, 4, 0);
+//   // my_fill_rainbow( leds7, NUM_LEDS, gHue, 4, 0);
+//   // my_fill_rainbow( leds8, NUM_LEDS, gHue, 4, 0);
+// }
 
-void rainbowWithGlitter()
-{
-  // built-in FastLED rainbow, plus some random sparkly glitter
-  rainbow();
-  addGlitter(80);
-}
+// void rainbowWithGlitter()
+// {
+//   // built-in FastLED rainbow, plus some random sparkly glitter
+//   rainbow();
+//   addGlitter(80);
+// }
 
-void addGlitter( fract8 chanceOfGlitter)
-{
-  // if( random8() < chanceOfGlitter) {
-  //   leds[ random16(NUM_LEDS) ] += CRGB::White;
-  // }
-}
+// void addGlitter( fract8 chanceOfGlitter)
+// {
+//   // if( random8() < chanceOfGlitter) {
+//   //   leds[ random16(NUM_LEDS) ] += CRGB::White;
+//   // }
+// }
 
-void confetti()
-{
-  // // random colored speckles that blink in and fade smoothly
-  // fadeToBlackBy( leds, NUM_LEDS, 10);
-  // int pos = random16(NUM_LEDS);
-  // int colornum = random8(3);
-  // if(colornum==0){
-  //   // leds[pos] += CHSV( gHue + random8(64), 200, 255);
-  //   leds[pos] += CRGB::Aqua;
-  // }
-  // else if(colornum==1){
-  //   leds[pos] += CRGB::White;
-  // }
-  // else{
-  //   leds[pos] += leds[pos] += CRGB::DeepPink;
-  // }
+// void confetti()
+// {
+//   // // random colored speckles that blink in and fade smoothly
+//   // fadeToBlackBy( leds, NUM_LEDS, 10);
+//   // int pos = random16(NUM_LEDS);
+//   // int colornum = random8(3);
+//   // if(colornum==0){
+//   //   // leds[pos] += CHSV( gHue + random8(64), 200, 255);
+//   //   leds[pos] += CRGB::Aqua;
+//   // }
+//   // else if(colornum==1){
+//   //   leds[pos] += CRGB::White;
+//   // }
+//   // else{
+//   //   leds[pos] += leds[pos] += CRGB::DeepPink;
+//   // }
   
-}
+// }
 
-void sinelon()
-{
-  // // a colored dot sweeping back and forth, with fading trails
-  // fadeToBlackBy( leds, NUM_LEDS, 20);
-  // int pos = beatsin16( 13, 0, NUM_LEDS-1 );
-  // leds[pos] += CHSV( gHue, 255, 192);
-}
+// void sinelon()
+// {
+//   // // a colored dot sweeping back and forth, with fading trails
+//   // fadeToBlackBy( leds, NUM_LEDS, 20);
+//   // int pos = beatsin16( 13, 0, NUM_LEDS-1 );
+//   // leds[pos] += CHSV( gHue, 255, 192);
+// }
 
-void bpm()
-{
-  // // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
-  // uint8_t BeatsPerMinute = 62;
-  // CRGBPalette16 palette = PartyColors_p;
-  // uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-  // for( int i = 0; i < NUM_LEDS; i++) { //9948
-  //   leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
-  // }
-}
+// void bpm()
+// {
+//   // // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+//   // uint8_t BeatsPerMinute = 62;
+//   // CRGBPalette16 palette = PartyColors_p;
+//   // uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
+//   // for( int i = 0; i < NUM_LEDS; i++) { //9948
+//   //   leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+//   // }
+// }
 
-void juggle() {
-  // eight colored dots, weaving in and out of sync with each other
-  // fadeToBlackBy( leds, NUM_LEDS, 20);
-  // byte dothue = 0;
-  // for( int i = 0; i < 8; i++) {
-  //   leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
-  //   dothue += 32;
-  // }
-}
+// void juggle() {
+//   // eight colored dots, weaving in and out of sync with each other
+//   // fadeToBlackBy( leds, NUM_LEDS, 20);
+//   // byte dothue = 0;
+//   // for( int i = 0; i < 8; i++) {
+//   //   leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
+//   //   dothue += 32;
+//   // }
+// }
 
-void rainbowrain()
-{
-  // fadeToBlackBy( leds, NUM_LEDS, 17);
-  // rain1.rain(1);
-  // rain2.rain();
-}
+// void rainbowrain()
+// {
+//   // fadeToBlackBy( leds, NUM_LEDS, 17);
+//   // rain1.rain(1);
+//   // rain2.rain();
+// }
