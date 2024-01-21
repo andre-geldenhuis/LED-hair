@@ -74,7 +74,7 @@ int potval = 0;
 bool runleds = true;
 //Forward Declare Functions
 // void nextPattern();
-// void rainbow();
+void rainbow();
 // void rainbowWithGlitter();
 // void addGlitter( fract8 chanceOfGlitter);
 // void confetti();
@@ -88,27 +88,27 @@ bool runleds = true;
 unsigned long p = 14;
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
-// void my_fill_rainbow( struct CRGB * pFirstLED, int numToFill,
-//                   uint8_t initialhue,
-//                   uint8_t deltahue,
-//                 bool dir=0 )
-// {
-//     CHSV hsv;
-//     hsv.hue = initialhue;
-//     hsv.val = 255;
-//     hsv.sat = 240;
-//     if(dir==1){
-//       for( int i = 0; i < numToFill; i++) {
-//           pFirstLED[i] = hsv;
-//           hsv.hue += deltahue;
-//       }
-//     }else{
-//       for( int i = numToFill-1; i >= 0; i--) {
-//           pFirstLED[i] = hsv;
-//           hsv.hue += deltahue;
-//       }
-//     }
-// }
+void my_fill_rainbow(CRGB *leds, int totalLeds, uint8_t initialhue, uint8_t deltahue, bool dir = 0) {
+    CHSV hsv;
+    hsv.hue = initialhue;
+    hsv.val = 255;
+    hsv.sat = 240;
+
+    if (dir == 0) {
+        // Forward direction
+        for (int i = 0; i < totalLeds; i++) {
+            leds[i] = hsv;
+            hsv.hue += deltahue;
+        }
+    } else {
+        // Reverse direction
+        for (int i = totalLeds - 1; i >= 0; i--) {
+            leds[i] = hsv;
+            hsv.hue += deltahue;
+        }
+    }
+}
+
 
 // class RainbowRain
 // {
@@ -178,7 +178,7 @@ void setup() {
   // FastLED.addLeds<SK6812, 7>(leds6, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
   // FastLED.addLeds<SK6812, 8>(leds7, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
   // FastLED.addLeds<SK6812, 9>(leds8, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-FastLED.setMaxRefreshRate(120);
+// FastLED.setMaxRefreshRate(120);
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
 
@@ -188,11 +188,11 @@ FastLED.setMaxRefreshRate(120);
 
 
 // // List of patterns to cycle through.  Each is defined as a separate function below.
-// typedef void (*SimplePatternList[])();
-// //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
-// SimplePatternList gPatterns = { confetti, rainbow, rainbowrain};
+typedef void (*SimplePatternList[])();
+//SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
+SimplePatternList gPatterns = { rainbow };
 
-// uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
+uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
 
 const int specificStrip = 0; // For example, the 4th strip (zero-based)
@@ -200,41 +200,41 @@ const int startIdx = specificStrip * ledsPerStrip;
 const int endIdx = (specificStrip + 1) * ledsPerStrip - 1;
 void loop()
 {
-// Example: Move a red dot along the specific strip
-    for (int i = startIdx; i <= endIdx; i++) {
-        // Clear the strip
-        for (int j = startIdx; j <= endIdx; j++) {
-            rgbarray[j] = CRGB::Black;
-        }
+// // Example: Move a red dot along the specific strip
+//     for (int i = startIdx; i <= endIdx; i++) {
+//         // Clear the strip
+//         for (int j = startIdx; j <= endIdx; j++) {
+//             rgbarray[j] = CRGB::Black;
+//         }
 
-        // Set the current pixel to red
-        rgbarray[i] = CRGB::Blue;
+//         // Set the current pixel to red
+//         rgbarray[i] = CRGB::Blue;
 
-        // Update the LEDs
-        FastLED.show();
+//         // Update the LEDs
+//         FastLED.show();
 
-        // Wait a little bit
-        // delay(50);
-    }
+//         // Wait a little bit
+//         // delay(50);
+//     }
 
 
-  // if(runleds){
-  //   // Call the current pattern function once, updating the 'leds' array
-  //   gPatterns[gCurrentPatternNumber]();
-  // }
-  // else{
-  //   // fadeToBlackBy( leds, NUM_LEDS, 10);  
-  // }
+  if(runleds){
+    // Call the current pattern function once, updating the 'leds' array
+    gPatterns[gCurrentPatternNumber]();
+  }
+  else{
+    // fadeToBlackBy( leds, NUM_LEDS, 10);  
+  }
   
 
   // send the 'leds' array out to the actual LED strip
-  // FastLED.show();
+  FastLED.show();
   // insert a delay to keep the framerate modest
   // FastLED.delay(1000/FRAMES_PER_SECOND);
 
   // do some periodic updates
-  // EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+1; 
-  // } // slowly cycle the "base color" through the rainbow
+  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+1; 
+  } // slowly cycle the "base color" through the rainbow
 
 
   // EVERY_N_MILLISECONDS ( 100 ){
@@ -263,9 +263,9 @@ void loop()
 
 
 
-        //   gCurrentPatternNumber=1;
-        // FastLED.setBrightness(BRIGHTNESS);
-        // runleds=true;
+  gCurrentPatternNumber=0;
+  FastLED.setBrightness(BRIGHTNESS);
+  runleds=true;
 
 
   // EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
@@ -279,19 +279,12 @@ void loop()
 //   gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
 // }
 
-// void rainbow()
-// {
-//   // FastLED's built-in rainbow generator
-//   my_fill_rainbow( leds1, NUM_LEDS, gHue, 4, 0);
-//   my_fill_rainbow( leds2, NUM_LEDS, gHue, 4, 0);
-//   my_fill_rainbow( leds3, NUM_LEDS, gHue, 4, 0);
-//   my_fill_rainbow( leds4, NUM_LEDS, gHue, 4, 0);
+void rainbow()
+{
+  // rainbow generator
+   my_fill_rainbow(rgbarray, numPins * ledsPerStrip, gHue, 5, 0);
 
-//   // my_fill_rainbow( leds5, NUM_LEDS, gHue, 4, 0);
-//   // my_fill_rainbow( leds6, NUM_LEDS, gHue, 4, 0);
-//   // my_fill_rainbow( leds7, NUM_LEDS, gHue, 4, 0);
-//   // my_fill_rainbow( leds8, NUM_LEDS, gHue, 4, 0);
-// }
+}
 
 // void rainbowWithGlitter()
 // {
