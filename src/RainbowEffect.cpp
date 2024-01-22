@@ -3,7 +3,7 @@
 RainbowEffect::RainbowEffect(CRGB *ledsArray, int numLeds) : leds(ledsArray), totalLeds(numLeds) {}
 
 void RainbowEffect::update() {
-    fillRainbow(5, 0);
+    fillRainbow(5, 1);
 }
 
 void RainbowEffect::fillRainbow(uint8_t deltahue, bool dir) {
