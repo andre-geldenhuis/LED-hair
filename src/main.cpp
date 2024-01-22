@@ -60,7 +60,7 @@ OctoWS2811 octo(ledsPerStrip, displayMemory, drawingMemory, WS2811_RGB | WS2811_
 
 RainbowEffect rainbow(rgbarray, numPins * ledsPerStrip);
 RainbowRain rainEffect(rgbarray, numPins, ledsPerStrip);
-WhiteRain whiteRainEffect(rgbarray, numPins, ledsPerStrip);
+WhiteRain whiteRainEffect(rgbarray, numPins, ledsPerStrip, 40);
 
 
 // Wrapper function for the rainbow effect
@@ -80,6 +80,7 @@ void callWhiteRainEffect() {
 
 int potval = 0;
 bool runleds = true;
+bool whiterain = false;
 
 
 //period between trail movement for rainbow_rain, milliseconds - for framerate locking
@@ -101,21 +102,21 @@ FastLED.setMaxRefreshRate(120);
 
   // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
 
-    Wire1.begin();
-    Serial.begin(115200);
-    if (!imu.begin(AFS_2G, GFS_250DPS)) {
-        Serial.println("MPU6050 is online...");
-    }
-    else {
-        Serial.println("Failed to init MPU6050");
-        while (true) 
-            ;
-    }
+    // Wire1.begin();
+    // Serial.begin(115200);
+    // if (!imu.begin(AFS_2G, GFS_250DPS)) {
+    //     Serial.println("MPU6050 is online...");
+    // }
+    // else {
+    //     Serial.println("Failed to init MPU6050");
+    //     while (true) 
+    //         ;
+    // }
 
-    // Initialize buffer
-    for (int i = 0; i < bufferSize; ++i) {
-        buffer[i] = 0;
-    }
+    // // Initialize buffer
+    // for (int i = 0; i < bufferSize; ++i) {
+    //     buffer[i] = 0;
+    // }
 
 }
 
@@ -154,7 +155,9 @@ void loop()
   if(runleds){
     // Call the current pattern function once, updating the 'leds' array
     gPatterns[gCurrentPatternNumber]();
-    callWhiteRainEffect();
+    if(whiterain){
+        callWhiteRainEffect();
+    }
   }
   else{ 
     fadeToBlackBy( rgbarray, NUM_LEDS, 10);  
@@ -168,54 +171,58 @@ void loop()
   } // slowly cycle the "base color" through the rainbow
 
 
-  // EVERY_N_MILLISECONDS ( 100 ){
-  //   potval = analogRead(A9);
-  //   if(potval <=250){
-  //    runleds=false;
-  //    FastLED.setBrightness(0);
-  //  }
-  //  else if(potval<=500){
-  //    gCurrentPatternNumber=0;
-  //    FastLED.setBrightness(BRIGHTNESS);
-  //    runleds=true;
-  //  }
-  //  else if(potval<=750){  // rainbow dim
-  //   gCurrentPatternNumber=1;
-  //   FastLED.setBrightness(BRIGHTNESS);
-  //   runleds=true;
-  //  }
-  //  else{   //rainbow rain
-  //       gCurrentPatternNumber=2;
-  //       FastLED.setBrightness(BRIGHTNESS);
-  //       runleds=true;
-  //  }
-  // }
-
-
-
-
-  gCurrentPatternNumber=0;
-  FastLED.setBrightness(BRIGHTNESS);
-  runleds=true;
- 
-  int16_t ax, ay, az, gx, gy, gz;
-  if (imu.getMotion6Counts(&ax, &ay, &az, &gx, &gy, &gz)) {
-      float magnitude = sqrt(ax * ax + ay * ay + az * az);
-      addToBuffer(magnitude);
-
-      // Check if the buffer is fully populated
-      if (buffer[bufferSize - 1] != 0) {
-          float mean = calculateMean();
-
-          // Step detection logic
-          unsigned long currentTime = millis();
-          if (magnitude > mean * 1.05 && (currentTime - lastStepTime) >= debounceInterval) {
-              // Count a step
-              lastStepTime = currentTime;
-              Serial.println("Step:");
-          }
-      }
+  EVERY_N_MILLISECONDS ( 100 ){
+    potval = analogRead(A9);
+    if(potval <=250){
+     runleds=false;
+     whiterain = false;
+     FastLED.setBrightness(0);
+   }
+   else if(potval<=500){
+     gCurrentPatternNumber=0;
+     FastLED.setBrightness(BRIGHTNESS);
+     runleds=true;
+     whiterain = false;
+   }
+   else if(potval<=750){  // rainbow dim
+    gCurrentPatternNumber=1;
+    FastLED.setBrightness(BRIGHTNESS);
+    runleds=true;
+    whiterain = false;
+   }
+   else{   //rainbow rain
+        gCurrentPatternNumber=0;
+        FastLED.setBrightness(5);
+        runleds=true;
+        whiterain = true;
+   }
   }
+
+
+
+
+//   gCurrentPatternNumber=0;
+//   FastLED.setBrightness(BRIGHTNESS);
+//   runleds=true;
+ 
+//   int16_t ax, ay, az, gx, gy, gz;
+//   if (imu.getMotion6Counts(&ax, &ay, &az, &gx, &gy, &gz)) {
+//       float magnitude = sqrt(ax * ax + ay * ay + az * az);
+//       addToBuffer(magnitude);
+
+//       // Check if the buffer is fully populated
+//       if (buffer[bufferSize - 1] != 0) {
+//           float mean = calculateMean();
+
+//           // Step detection logic
+//           unsigned long currentTime = millis();
+//           if (magnitude > mean * 1.05 && (currentTime - lastStepTime) >= debounceInterval) {
+//               // Count a step
+//               lastStepTime = currentTime;
+//               Serial.println("Step:");
+//           }
+//       }
+//   }
 
   // EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
 }
