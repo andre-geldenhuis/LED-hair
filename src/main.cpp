@@ -29,7 +29,7 @@ OctoWS2811 octo(ledsPerStrip, displayMemory, drawingMemory, WS2811_RGB | WS2811_
 #define FRAMES_PER_SECOND  120
 
 RainbowEffect rainbow(rgbarray, numPins * ledsPerStrip);
-RainbowRain rainEffect(rgbarray, numPins * ledsPerStrip);
+RainbowRain rainEffect(rgbarray, numPins, ledsPerStrip);
 
 
 // Wrapper function for the rainbow effect
@@ -38,8 +38,8 @@ void callRainbow() {
 }
 
 void callRainEffect() {
-    rainEffect.rain(); // Adjust the direction parameter as needed
-     fadeToBlackBy( rgbarray, NUM_LEDS, 10);  
+    rainEffect.update(); // Call the update method of the rainEffect instance
+    fadeToBlackBy(rgbarray, numPins * ledsPerStrip, 10); // Gradually dim the LEDs
 }
 
 int potval = 0;
@@ -59,7 +59,7 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);
   FastLED.addLeds(pcontroller, rgbarray, numPins * ledsPerStrip);
 
-// FastLED.setMaxRefreshRate(120);
+FastLED.setMaxRefreshRate(120);
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
 
@@ -141,7 +141,7 @@ void loop()
 
 
 
-  gCurrentPatternNumber=1;
+  gCurrentPatternNumber=0;
   FastLED.setBrightness(BRIGHTNESS);
   runleds=true;
  

@@ -4,21 +4,25 @@
 #include "FastLED.h"
 
 extern uint8_t gHue; // Access to the global hue variable
-extern unsigned long p; // Access to the global interval variable
 
 class RainbowRain {
 public:
-    RainbowRain(CRGB *leds, int totalLeds);
-    void rain(bool dir = 0);
+    RainbowRain(CRGB *leds, int numStrips, int ledsPerStrip);
+    void update();
 
 private:
+    struct Raindrop {
+        unsigned long lastUpdate;
+        uint8_t position;
+        bool active;
+    };
+
+    static const int maxStrips = 8; // Maximum number of strips
+    Raindrop raindrops[maxStrips];   // Array of raindrops
     CRGB *leds;
-    int totalLeds;
-    unsigned long previous_millis;
-    uint8_t rainpos;
+    int numStrips;
+    int ledsPerStrip;
+    void moveRaindrop(int stripIndex);
 };
 
-
 #endif // RAINBOWRAIN_H
-
-
