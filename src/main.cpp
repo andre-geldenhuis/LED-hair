@@ -3,6 +3,36 @@
 #include "OctoWS2811FastLED.h"
 #include "RainbowEffect.h"
 #include "RainbowRain.h"
+#include "WhiteRain.h"
+
+#include <Wire.h>
+#include <mpu6050.h>
+
+MPU6050 imu;
+
+
+const int bufferSize = 1000;
+float buffer[bufferSize];
+int bufferIndex = 0;
+float bufferSum = 0;
+
+const unsigned long debounceInterval = 250; // Debounce interval in milliseconds
+unsigned long lastStepTime = 0;
+
+void addToBuffer(float value) {
+    // Subtract the oldest value from the sum and replace it with the new value
+    bufferSum -= buffer[bufferIndex];
+    buffer[bufferIndex] = value;
+    bufferSum += value;
+
+    // Update the buffer index (circular buffer)
+    bufferIndex = (bufferIndex + 1) % bufferSize;
+}
+
+float calculateMean() {
+    return bufferSum / bufferSize;
+}
+
 
 FASTLED_USING_NAMESPACE
 
@@ -30,6 +60,7 @@ OctoWS2811 octo(ledsPerStrip, displayMemory, drawingMemory, WS2811_RGB | WS2811_
 
 RainbowEffect rainbow(rgbarray, numPins * ledsPerStrip);
 RainbowRain rainEffect(rgbarray, numPins, ledsPerStrip);
+WhiteRain whiteRainEffect(rgbarray, numPins, ledsPerStrip);
 
 
 // Wrapper function for the rainbow effect
@@ -40,6 +71,11 @@ void callRainbow() {
 void callRainEffect() {
     rainEffect.update(); // Call the update method of the rainEffect instance
     fadeToBlackBy(rgbarray, numPins * ledsPerStrip, 10); // Gradually dim the LEDs
+}
+
+// Wrapper function for the WhiteRain effect
+void callWhiteRainEffect() {
+    whiteRainEffect.update(); // Call the update method on the object instance
 }
 
 int potval = 0;
@@ -65,13 +101,29 @@ FastLED.setMaxRefreshRate(120);
 
   // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
 
+    Wire1.begin();
+    Serial.begin(115200);
+    if (!imu.begin(AFS_2G, GFS_250DPS)) {
+        Serial.println("MPU6050 is online...");
+    }
+    else {
+        Serial.println("Failed to init MPU6050");
+        while (true) 
+            ;
+    }
+
+    // Initialize buffer
+    for (int i = 0; i < bufferSize; ++i) {
+        buffer[i] = 0;
+    }
+
 }
 
 
 // // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 
-SimplePatternList gPatterns = { callRainbow, callRainEffect };
+SimplePatternList gPatterns = { callRainbow, callRainEffect, callWhiteRainEffect };
 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
@@ -102,6 +154,7 @@ void loop()
   if(runleds){
     // Call the current pattern function once, updating the 'leds' array
     gPatterns[gCurrentPatternNumber]();
+    callWhiteRainEffect();
   }
   else{ 
     fadeToBlackBy( rgbarray, NUM_LEDS, 10);  
@@ -145,7 +198,24 @@ void loop()
   FastLED.setBrightness(BRIGHTNESS);
   runleds=true;
  
+  int16_t ax, ay, az, gx, gy, gz;
+  if (imu.getMotion6Counts(&ax, &ay, &az, &gx, &gy, &gz)) {
+      float magnitude = sqrt(ax * ax + ay * ay + az * az);
+      addToBuffer(magnitude);
 
+      // Check if the buffer is fully populated
+      if (buffer[bufferSize - 1] != 0) {
+          float mean = calculateMean();
+
+          // Step detection logic
+          unsigned long currentTime = millis();
+          if (magnitude > mean * 1.05 && (currentTime - lastStepTime) >= debounceInterval) {
+              // Count a step
+              lastStepTime = currentTime;
+              Serial.println("Step:");
+          }
+      }
+  }
 
   // EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
 }
