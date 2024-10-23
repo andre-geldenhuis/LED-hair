@@ -7,12 +7,12 @@ FASTLED_USING_NAMESPACE
 #endif
 
 #define NUM_STRIPS 1
-#define NUM_LEDS_PER_STRIP 223 //26+30 +26+30+55+26+30
+#define NUM_LEDS_PER_STRIP 600 //26+30 +26+30+55+26+30
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
 CRGB leds[NUM_STRIPS * NUM_LEDS_PER_STRIP];
 
-CRGBSet leds_1(leds, 0,                                                                    111);
-CRGBSet leds_2(leds, 112,                                                   NUM_LEDS_PER_STRIP);
+CRGBSet leds_1(leds, 0,                                                                    300);
+CRGBSet leds_2(leds, 301,                                                   NUM_LEDS_PER_STRIP);
 
 //#define BRIGHTNESS          30
 #define BRIGHTNESS          20
@@ -96,8 +96,8 @@ class RainbowRain
 };
 
 //Instantiate rainbow rain for each strip
-RainbowRain rain1(leds_1, 112);
-RainbowRain rain2(leds_2, 111);
+RainbowRain rain1(leds_1, 301);
+RainbowRain rain2(leds_2, 299);
 void setup() {
   delay(200); // 3 second delay for recovery
 
@@ -117,7 +117,7 @@ typedef void (*SimplePatternList[])();
 //SimplePatternList gPatterns = { rainbow, confetti, sinelon, juggle, bpm };
 SimplePatternList gPatterns = { confetti, rainbow, rainbowrain};
 
-uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
+uint8_t gCurrentPatternNumber = 2; // Index number of which pattern is current
 
 void loop()
 {
@@ -138,28 +138,32 @@ void loop()
   // do some periodic updates
   EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+3; 
   } // slowly cycle the "base color" through the rainbow
-  EVERY_N_MILLISECONDS ( 100 ){
-    potval = analogRead(10);
-    if(potval <=250){
-     runleds=false;
-     FastLED.setBrightness(0);
-   }
-   else if(potval<=500){
-     gCurrentPatternNumber=0;
-     FastLED.setBrightness(BRIGHTNESS);
-     runleds=true;
-   }
-   else if(potval<=750){  // rainbow dim
-    gCurrentPatternNumber=1;
-    FastLED.setBrightness(BRIGHTNESS);
-    runleds=true;
-   }
-   else{   //rainbow rain
+//   EVERY_N_MILLISECONDS ( 100 ){
+//     potval = analogRead(10);
+//     if(potval <=250){
+//      runleds=false;
+//      FastLED.setBrightness(0);
+//    }
+//    else if(potval<=500){
+//      gCurrentPatternNumber=0;
+//      FastLED.setBrightness(BRIGHTNESS);
+//      runleds=true;
+//    }
+//    else if(potval<=750){  // rainbow dim
+//     gCurrentPatternNumber=1;
+//     FastLED.setBrightness(BRIGHTNESS);
+//     runleds=true;
+//    }
+//    else{   //rainbow rain
+//         gCurrentPatternNumber=2;
+//         FastLED.setBrightness(BRIGHTNESS);
+//         runleds=true;
+//    }
+//   }
         gCurrentPatternNumber=2;
         FastLED.setBrightness(BRIGHTNESS);
         runleds=true;
-   }
-  }
+
   // EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
 }
 
