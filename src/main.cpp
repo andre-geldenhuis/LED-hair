@@ -169,13 +169,16 @@ void loop()
   // insert a delay to keep the framerate modest
   FastLED.delay(1000/FRAMES_PER_SECOND);
 
-  EVERY_N_MILLISECONDS(300){
-    Serial.println(modval);
-  }
-  EVERY_N_MILLISECONDS ( 100 ){
-    modeval   = analogRead(MODE_POT);
-    modval    = analogRead(MOD_POT);
-    brightval = analogRead(BRIGHT_POT);
+  // EVERY_N_MILLISECONDS(300){
+  //   Serial.println(modval);
+  // }
+  // EVERY_N_MILLISECONDS ( 100 ){
+    // modeval   = analogRead(MODE_POT);
+    // modval    = analogRead(MOD_POT);
+    // brightval = analogRead(BRIGHT_POT);
+    brightval =2000;
+    modeval = 1500;
+    modval = 250;
     if(brightval <=200){
      runleds=false;
      FastLED.setBrightness(0);
@@ -184,29 +187,13 @@ void loop()
       FastLED.setBrightness(map(brightval, 0, 4095, 0, 255));
       runleds=true;
     }
+    FastLED.setTemperature( Tungsten40W  ); // Set Temperature
 
-    switch(modeval){
-      case 0 ...1000:
-        gCurrentPatternNumber=0;
-        // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
-        break;
-      case 1001 ...2000:
         gCurrentPatternNumber=1;
         // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
-        break;
-      case 2001 ...3000:
-        gCurrentPatternNumber=2;
-        // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
-        break;
-      case 3001 ...3500:
-        gCurrentPatternNumber=3;
-        // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
-        break;
-      default:
-        gCurrentPatternNumber=4;
-        break;
-    }
-  }
+        int8_t huerate=1;
+        EVERY_N_MILLISECONDS( 20 ) { gHue = gHue+huerate; } 
+  // }
   // EVERY_N_SECONDS( 20 ) { nextPattern(); } // change patterns periodically
 }
 
@@ -251,7 +238,7 @@ void rainbow()
         break;
     }
     // do some periodic updates
-  EVERY_N_MILLISECONDS( 1 ) { gHue = gHue+huerate; } 
+  
 
   if(!split){
   // FastLED's built-in rainbow generator
