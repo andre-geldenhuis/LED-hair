@@ -38,7 +38,8 @@ FASTLED_USING_NAMESPACE
 
 // Use  OctoWS2811 with fastled, see: https://blinkylights.blog/2021/02/03/using-teensy-4-1-with-fastled/
 const int numPins = 8;
-byte pinList[numPins] = {2, 3, 4, 5, 6, 7, 8, 9};
+byte pinList[numPins] = {12, 13, 14, 15, 6, 7, 8, 9};
+// byte pinList[numPins] = {3};
 const int ledsPerStrip = 160;
 CRGB rgbarray[numPins * ledsPerStrip];
 
@@ -79,6 +80,7 @@ void callWhiteRainEffect() {
 }
 
 int potval = 0;
+int runval = 0;
 bool runleds = true;
 bool whiterain = false;
 
@@ -90,6 +92,7 @@ uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 CTeensy4Controller<GRB, WS2811_800kHz> *pcontroller;
 void setup() {
   delay(200); //delay for recovery
+  Serial.begin(9600);
   octo.begin();
   pcontroller = new CTeensy4Controller<GRB, WS2811_800kHz>(&octo);
 
@@ -172,19 +175,31 @@ void loop()
 
 
   EVERY_N_MILLISECONDS ( 100 ){
-    potval = analogRead(A9);
-    if(potval <=250){
+    potval = analogRead(A3);
+    // Serial.print("A val: ");
+    // Serial.println(potval);
+    // delay(200);
+    if(potval<730){
+      runval = 0;
+    }
+    else{
+      runval = 780;
+    }
+    // potval = 780;
+
+    if(runval <=250){
      runleds=false;
      whiterain = false;
      FastLED.setBrightness(0);
+     delay(120000);
    }
-   else if(potval<=500){
+   else if(runval<=500){
      gCurrentPatternNumber=0;
      FastLED.setBrightness(BRIGHTNESS);
      runleds=true;
      whiterain = false;
    }
-   else if(potval<=750){  // rainbow dim
+   else if(runval<=750){  // rainbow dim
     gCurrentPatternNumber=1;
     FastLED.setBrightness(BRIGHTNESS);
     runleds=true;
