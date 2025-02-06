@@ -8,9 +8,19 @@
 #include <Wire.h>
 #include <mpu6050.h>
 
+
+
+
 MPU6050 imu;
 
+// Battery monitoring ring buffer
+const int BATT_BUFFER_SIZE = 200;
+int battringBuffer[BATT_BUFFER_SIZE];
+int battbufferIndex = 0;
+int battprefill = 700; //a middling voltage level to prefill the ring buffer with.
+long battsum = battprefill*BATT_BUFFER_SIZE; // To keep track of the sum of the buffer for quick averaging, prfilled with middling value
 
+// IMU buffer
 const int bufferSize = 1000;
 float buffer[bufferSize];
 int bufferIndex = 0;
@@ -104,6 +114,10 @@ FastLED.setMaxRefreshRate(120);
   FastLED.setBrightness(BRIGHTNESS);
 
   // FastLED.setTemperature( Tungsten40W  ); // Set Temperature
+  // Initialise battery buffer
+    for (int i = 0; i < BATT_BUFFER_SIZE; i++) {
+      battringBuffer[i] = battprefill;  // initialise to a middling voltage reading
+    }
 
     // Wire1.begin();
     // Serial.begin(115200);
@@ -176,10 +190,23 @@ void loop()
 
   EVERY_N_MILLISECONDS ( 100 ){
     potval = analogRead(A3);
+    battsum -= battringBuffer[battbufferIndex];
+    battringBuffer[battbufferIndex] = potval;
+
+    // Add the new value to the sum
+    battsum += potval;
+    // Move the buffer index to the next position
+    battbufferIndex = (battbufferIndex + 1) % BATT_BUFFER_SIZE;
+
+    // Calculate the average
+    float average = (float)battsum / BATT_BUFFER_SIZE;
+
+
+
+
     // Serial.print("A val: ");
-    // Serial.println(potval);
-    // delay(200);
-    if(potval<730){
+    // Serial.println(average);
+    if(average<685){
       runval = 0;
     }
     else{
@@ -190,8 +217,20 @@ void loop()
     if(runval <=250){
      runleds=false;
      whiterain = false;
-     FastLED.setBrightness(0);
+    //  FastLED.setBrightness(0);
+    // Clear the strip
+    for (int j = 0; j <= NUM_LEDS; j++) {
+        rgbarray[j] = CRGB::Black;
+    }
+    // Set 10 leds red
+    for (int i = 50; i <= 55; i++) {
+        // Set the current pixel to red
+        rgbarray[i] = CRGB::Red;
+    }
+
+     FastLED.show();
      delay(120000);
+     
    }
    else if(runval<=500){
      gCurrentPatternNumber=0;
