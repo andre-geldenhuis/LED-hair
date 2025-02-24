@@ -7,7 +7,7 @@ FASTLED_USING_NAMESPACE
 #endif
 
 #define NUM_STRIPS 1
-#define NUM_LEDS_PER_STRIP 200
+#define NUM_LEDS_PER_STRIP 320
 #define NUM_LEDS (NUM_LEDS_PER_STRIP * NUM_STRIPS)
 
 #define MODE_POT 34
@@ -165,35 +165,37 @@ void loop()
 
     EVERY_N_MILLISECONDS(100)
     {
-        modeval = analogRead(MODE_POT);
-        modval = analogRead(MOD_POT);
-        brightval = analogRead(BRIGHT_POT);
+        // modeval = analogRead(MODE_POT);
+        // modval = analogRead(MOD_POT);
+        // brightval = analogRead(BRIGHT_POT);
+        runleds = true;
+        FastLED.setBrightness(255);
 
-        if (brightval <= 200) {
-            runleds = false;
-            FastLED.setBrightness(0);
-        } else {
-            FastLED.setBrightness(map(brightval, 0, 4095, 0, 255));
-            runleds = true;
-        }
-
-        switch (modeval) {
-        case 0 ... 1000:
-            gCurrentPatternNumber = 0;
-            break;
-        case 1001 ... 2000:
-            gCurrentPatternNumber = 1;
-            break;
-        case 2001 ... 3000:
-            gCurrentPatternNumber = 2;
-            break;
-        case 3001 ... 3500:
-            gCurrentPatternNumber = 3;
-            break;
-        default:
-            gCurrentPatternNumber = 4;
-            break;
-        }
+        // if (brightval <= 200) {
+        //     runleds = false;
+        //     FastLED.setBrightness(0);
+        // } else {
+        //     FastLED.setBrightness(map(brightval, 0, 4095, 0, 255));
+        //     runleds = true;
+        // }
+        gCurrentPatternNumber = 2;
+        // switch (modeval) {
+        // case 0 ... 1000:
+        //     gCurrentPatternNumber = 0;
+        //     break;
+        // case 1001 ... 2000:
+        //     gCurrentPatternNumber = 1;
+        //     break;
+        // case 2001 ... 3000:
+        //     gCurrentPatternNumber = 2;
+        //     break;
+        // case 3001 ... 3500:
+        //     gCurrentPatternNumber = 3;
+        //     break;
+        // default:
+        //     gCurrentPatternNumber = 4;
+        //     break;
+        // }
 
         // Update hue parameters based on the current pattern and modval
         updateHueParameters();
